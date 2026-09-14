@@ -1,27 +1,264 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>bonbap</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body {
-      margin: 0; min-height: 100vh;
-      display: grid; place-items: center;
-      font: 400 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: #0f0f11; color: #e8e8ea;
-    }
-    main { text-align: center; padding: 2rem; }
-    h1 { font-size: clamp(2.5rem, 8vw, 4rem); margin: 0 0 .5rem; letter-spacing: -.03em; }
-    p { margin: 0; opacity: .55; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85em; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0a0a">
+<title>bonbap</title>
+<meta name="description" content="bonbap — blog do bon, restaurantes favoritos e a loja de samples.">
+<link rel="canonical" href="https://bonbap.com.br/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="bonbap">
+<meta property="og:description" content="Blog do Bon, restaurantes favoritos e a loja de samples.">
+<meta property="og:url" content="https://bonbap.com.br/">
+<meta property="og:locale" content="pt_BR">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230a0a0a'/><circle cx='16' cy='16' r='5' fill='%23cfcfcf'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800&display=swap">
+
+<style>
+/* ---------------------------------------------------------------- tokens */
+:root {
+  color-scheme: dark;                 /* escuro sempre, sem seguir o sistema */
+  --bg: #0a0a0a;
+  --fg: #fafafa;
+  --solid: #cfcfcf;                   /* cinza claro da tipografia gigante */
+  --dim: #464646;                     /* itens do menu que recuam */
+  --muted: #8a8a8a;
+  --line: rgba(255, 255, 255, .09);
+  --pad: clamp(1.25rem, 4vw, 3rem);
+  --ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font: 500 16px/1.5 "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ------------------------------------------------------ camadas de fundo */
+.layer { position: fixed; inset: 0; pointer-events: none; z-index: -1; }
+
+/* luz fria que segue o ponteiro — só profundidade, sem cor */
+.layer--glow {
+  background: radial-gradient(42rem 42rem at var(--mx, 50%) var(--my, 30%),
+              rgba(255, 255, 255, .055), transparent 62%);
+}
+
+.layer--grain {
+  opacity: .035;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+
+/* ------------------------------------------------- tipografia de sangria */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mark {
+  padding: clamp(.75rem, 2.5vh, 3rem) 0 0;
+  overflow: hidden;
+}
+
+.mark span {
+  display: block;
+  width: max-content;            /* a caixa mede exatamente o texto */
+  white-space: nowrap;
+  line-height: .74;
+  letter-spacing: -.035em;
+  /* tamanho de partida — o script ajusta para encostar nas duas bordas */
+  font-size: 28vw;
+}
+
+.solid { font-weight: 800; color: var(--solid); }
+
+/* --------------------------------------------------------- menu simples */
+.menu {
+  margin-top: clamp(1.25rem, 3vh, 3.5rem);
+  padding: 0 var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+
+.door {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: clamp(.6rem, 1.25vh, 1.4rem) 0;
+  border-top: 1px solid var(--line);
+  color: var(--fg);
+  text-decoration: none;
+  font-size: clamp(1.05rem, min(3vw, 3.6vh), 2.05rem);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  text-transform: uppercase;
+  transition: color .4s ease;
+}
+
+/* o link em foco acende; os outros recuam */
+.menu:hover .door,
+.menu:focus-within .door { color: var(--dim); }
+
+.menu .door:hover,
+.menu .door:focus-visible { color: var(--fg); }
+
+.door:focus-visible { outline: none; }
+.door:focus-visible .label { text-decoration: underline; text-underline-offset: .35em; }
+
+.label { transition: transform .5s var(--ease); }
+.menu .door:hover .label,
+.menu .door:focus-visible .label { transform: translateX(clamp(4px, .8vw, 12px)); }
+
+.arr {
+  flex: none;
+  font-size: .8em;
+  opacity: 0;
+  transition: opacity .4s ease, transform .5s var(--ease);
+}
+.menu .door:hover .arr,
+.menu .door:focus-visible .arr { opacity: 1; transform: translate(0, -.2em); }
+
+/* -------------------------------------------------------------- rodapé */
+footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+  padding: clamp(.6rem, 1.5vh, 1.4rem) var(--pad);
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+footer a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color .3s ease;
+}
+footer a:hover, footer a:focus-visible { color: var(--fg); }
+
+/* sem hover (toque), nada some */
+@media (hover: none) {
+  .menu:hover .door, .menu:focus-within .door { color: var(--fg); }
+  .arr { opacity: .35; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal { animation: rise 1s var(--ease) backwards; animation-delay: var(--d, 0s); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  /* o rodapé é o último elemento: translação aqui criaria barra de rolagem, então só fade */
+  .reveal--fade { animation: fade 1s var(--ease) backwards; animation-delay: var(--d, 0s); }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+}
+</style>
 </head>
+
 <body>
+  <div class="layer layer--glow"></div>
+  <div class="layer layer--grain"></div>
+
   <main>
-    <h1>bonbap</h1>
-    <p>em construção &middot; <code>bonbap.com.br</code></p>
+    <div class="mark reveal">
+      <span class="solid" data-fit>bonbap</span>
+    </div>
+
+    <nav class="menu" aria-label="Projetos">
+      <a class="door reveal" style="--d:.2s" href="https://blog.bonbap.com.br/">
+        <span class="label">Blog do Bon</span>
+        <span class="arr" aria-hidden="true">&#8599;</span>
+      </a>
+      <a class="door reveal" style="--d:.28s" href="/mipas/">
+        <span class="label">Restaurantes Favoritos</span>
+        <span class="arr" aria-hidden="true">&#8599;</span>
+      </a>
+      <a class="door reveal" style="--d:.36s" href="/bon-sample-store/">
+        <span class="label">Loja de Samples</span>
+        <span class="arr" aria-hidden="true">&#8599;</span>
+      </a>
+    </nav>
   </main>
+
+  <footer class="reveal--fade" style="--d:.44s">
+    <a href="https://github.com/henribon" rel="me">github &#8599;</a>
+  </footer>
+
+<script>
+(function () {
+  /* ajusta cada linha para encostar exatamente nas duas bordas da tela */
+  var lines = [].slice.call(document.querySelectorAll('[data-fit]'));
+  var body = document.querySelector('main');
+  var foot = document.querySelector('footer');
+
+  function linesHeight() {
+    return lines.reduce(function (sum, el) { return sum + el.offsetHeight; }, 0);
+  }
+
+  /* altura exigida pela página. offsetHeight ignora o transform da animação de entrada,
+     e o <main> é esticado pelo flex quando sobra espaço — então isto só acusa falta. */
+  function needed() {
+    return body.offsetHeight + foot.offsetHeight;
+  }
+
+  function fit() {
+    lines.forEach(function (el) {
+      var target = el.parentElement.clientWidth;
+      el.style.fontSize = '200px';
+      var natural = el.getBoundingClientRect().width;
+      el.style.fontSize = ((target && natural) ? 200 * target / natural : 200).toFixed(2) + 'px';
+    });
+
+    /* tela baixa: encolhe as linhas só o tanto que falta para tudo caber sem rolagem */
+    for (var pass = 0; pass < 3; pass++) {
+      var over = needed() - innerHeight;
+      if (over <= .5) break;
+      var total = linesHeight();
+      if (total <= over) break;
+      var k = (total - over) / total;
+      lines.forEach(function (el) {
+        el.style.fontSize = (parseFloat(el.style.fontSize) * k).toFixed(2) + 'px';
+      });
+    }
+  }
+
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+
+  var pending = false;
+  addEventListener('resize', function () {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function () { pending = false; fit(); });
+  });
+
+  /* a luz de fundo segue o ponteiro, com um atraso suave */
+  var glow = document.querySelector('.layer--glow');
+  var tx = 50, ty = 30, cx = 50, cy = 30, raf = null;
+
+  function frame() {
+    cx += (tx - cx) * .07;
+    cy += (ty - cy) * .07;
+    glow.style.setProperty('--mx', cx.toFixed(2) + '%');
+    glow.style.setProperty('--my', cy.toFixed(2) + '%');
+    raf = (Math.abs(tx - cx) > .1 || Math.abs(ty - cy) > .1) ? requestAnimationFrame(frame) : null;
+  }
+
+  addEventListener('pointermove', function (e) {
+    tx = e.clientX / innerWidth * 100;
+    ty = e.clientY / innerHeight * 100;
+    if (!raf) raf = requestAnimationFrame(frame);
+  }, { passive: true });
+})();
+</script>
 </body>
 </html>
