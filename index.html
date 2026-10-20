@@ -130,6 +130,76 @@ main {
 .menu .door:hover .arr,
 .menu .door:focus-visible .arr { opacity: 1; transform: translate(0, -.2em); }
 
+/* -------------------------------------------------------------- submenu */
+/* a porta da loja não sai da página: abre as duas opções aqui mesmo */
+.door--toggle {
+  width: 100%;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  border-top: 1px solid var(--line);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* aberta, ela continua acesa mesmo com o ponteiro em outra porta */
+.menu:hover .door--toggle[aria-expanded="true"],
+.menu:focus-within .door--toggle[aria-expanded="true"] { color: var(--fg); }
+
+/* a seta do submenu gira em vez de subir */
+.menu .door--toggle:hover .arr--down,
+.menu .door--toggle:focus-visible .arr--down { opacity: 1; transform: none; }
+
+.door--toggle[aria-expanded="true"] .arr--down,
+.menu .door--toggle[aria-expanded="true"]:hover .arr--down,
+.menu .door--toggle[aria-expanded="true"]:focus-visible .arr--down {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
+.sub {
+  display: grid;
+  /* o fio à esquerda amarra as duas portas filhas à de cima */
+  border-left: 1px solid var(--line);
+  margin-left: clamp(.35rem, 1.2vw, 1rem);
+  padding: clamp(.15rem, .5vh, .5rem) 0 clamp(.3rem, 1vh, .9rem);
+}
+
+/* o atributo hidden perde para o display da regra acima, então desliga na mão */
+.sub[hidden] { display: none; }
+
+.leaf {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: clamp(.35rem, .8vh, .85rem) clamp(.9rem, 2vw, 1.75rem);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: clamp(.9rem, min(2.1vw, 2.5vh), 1.4rem);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  text-transform: uppercase;
+  transition: color .4s ease;
+}
+
+.menu:hover .leaf,
+.menu:focus-within .leaf { color: var(--dim); }
+
+.menu .leaf:hover,
+.menu .leaf:focus-visible { color: var(--fg); }
+
+.leaf:focus-visible { outline: none; }
+.leaf:focus-visible .label { text-decoration: underline; text-underline-offset: .35em; }
+
+.menu .leaf:hover .label,
+.menu .leaf:focus-visible .label { transform: translateX(clamp(4px, .8vw, 12px)); }
+.menu .leaf:hover .arr,
+.menu .leaf:focus-visible .arr { opacity: 1; transform: translate(0, -.2em); }
+
 /* -------------------------------------------------------------- rodapé */
 footer {
   margin-top: auto;
@@ -150,12 +220,17 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
 /* sem hover (toque), nada some */
 @media (hover: none) {
   .menu:hover .door, .menu:focus-within .door { color: var(--fg); }
+  .menu:hover .leaf, .menu:focus-within .leaf { color: var(--muted); }
   .arr { opacity: .35; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .reveal { animation: rise 1s var(--ease) backwards; animation-delay: var(--d, 0s); }
   @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  /* as portas filhas sobem quando o submenu abre */
+  .sub:not([hidden]) .leaf { animation: rise .6s var(--ease) backwards; }
+  .sub:not([hidden]) .leaf:nth-child(2) { animation-delay: .06s; }
 
   /* o rodapé é o último elemento: translação aqui criaria barra de rolagem, então só fade */
   .reveal--fade { animation: fade 1s var(--ease) backwards; animation-delay: var(--d, 0s); }
@@ -182,10 +257,23 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
         <span class="label">Restaurantes Favoritos</span>
         <span class="arr" aria-hidden="true">&#8599;</span>
       </a>
-      <a class="door reveal" style="--d:.36s" href="/bon-sample-store/">
-        <span class="label">Loja de Samples</span>
-        <span class="arr" aria-hidden="true">&#8599;</span>
-      </a>
+
+      <button class="door door--toggle reveal" style="--d:.36s" type="button"
+              aria-expanded="false" aria-controls="loja" data-toggle>
+        <span class="label">Loja e Conteúdos</span>
+        <span class="arr arr--down" aria-hidden="true">&#8595;</span>
+      </button>
+
+      <div class="sub" id="loja" hidden>
+        <a class="leaf" href="/bon-sample-store/">
+          <span class="label">Loja de Samples</span>
+          <span class="arr" aria-hidden="true">&#8599;</span>
+        </a>
+        <a class="leaf" href="https://bonbap.gumroad.com/">
+          <span class="label">Conteúdos no Gumroad</span>
+          <span class="arr" aria-hidden="true">&#8599;</span>
+        </a>
+      </div>
     </nav>
   </main>
 
@@ -240,6 +328,30 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
     pending = true;
     requestAnimationFrame(function () { pending = false; fit(); });
   });
+
+  /* a porta da loja abre as duas opções na própria página */
+  var toggle = document.querySelector('[data-toggle]');
+  var sub = toggle && document.getElementById(toggle.getAttribute('aria-controls'));
+
+  if (sub) {
+    var setOpen = function (open) {
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      sub.hidden = !open;
+      /* o layout já está no estado final: a tipografia recua o tanto que precisar */
+      fit();
+    };
+
+    toggle.addEventListener('click', function () {
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
 
   /* a luz de fundo segue o ponteiro, com um atraso suave */
   var glow = document.querySelector('.layer--glow');
