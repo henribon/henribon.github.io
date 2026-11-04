@@ -131,7 +131,7 @@ main {
 .menu .door:focus-visible .arr { opacity: 1; transform: translate(0, -.2em); }
 
 /* -------------------------------------------------------------- submenu */
-/* a porta da loja não sai da página: abre as duas opções aqui mesmo */
+/* as portas com seta pra baixo não saem da página: abrem as opções aqui mesmo */
 .door--toggle {
   width: 100%;
   background: none;
@@ -258,10 +258,22 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
         <span class="arr" aria-hidden="true">&#8599;</span>
       </a>
 
-      <a class="door reveal" style="--d:.36s" href="/listening-spotify/">
-        <span class="label">Ouvindo no Spotify</span>
-        <span class="arr" aria-hidden="true">&#8599;</span>
-      </a>
+      <button class="door door--toggle reveal" style="--d:.36s" type="button"
+              aria-expanded="false" aria-controls="musica" data-toggle>
+        <span class="label">Música</span>
+        <span class="arr arr--down" aria-hidden="true">&#8595;</span>
+      </button>
+
+      <div class="sub" id="musica" hidden>
+        <a class="leaf" href="/disco-do-dia/">
+          <span class="label">Disco do Dia</span>
+          <span class="arr" aria-hidden="true">&#8599;</span>
+        </a>
+        <a class="leaf" href="/listening-spotify/">
+          <span class="label">Ouvindo no Spotify</span>
+          <span class="arr" aria-hidden="true">&#8599;</span>
+        </a>
+      </div>
 
       <button class="door door--toggle reveal" style="--d:.44s" type="button"
               aria-expanded="false" aria-controls="loja" data-toggle>
@@ -334,11 +346,11 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
     requestAnimationFrame(function () { pending = false; fit(); });
   });
 
-  /* a porta da loja abre as duas opções na própria página */
-  var toggle = document.querySelector('[data-toggle]');
-  var sub = toggle && document.getElementById(toggle.getAttribute('aria-controls'));
+  /* cada porta com seta pra baixo abre as opções na própria página */
+  [].forEach.call(document.querySelectorAll('[data-toggle]'), function (toggle) {
+    var sub = document.getElementById(toggle.getAttribute('aria-controls'));
+    if (!sub) return;
 
-  if (sub) {
     var setOpen = function (open) {
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
       sub.hidden = !open;
@@ -356,7 +368,7 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
         toggle.focus();
       }
     });
-  }
+  });
 
   /* a luz de fundo segue o ponteiro, com um atraso suave */
   var glow = document.querySelector('.layer--glow');
