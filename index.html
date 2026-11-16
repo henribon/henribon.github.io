@@ -161,7 +161,7 @@ main {
 
 .sub {
   display: grid;
-  /* o fio à esquerda amarra as duas portas filhas à de cima */
+  /* o fio à esquerda amarra as portas filhas à de cima */
   border-left: 1px solid var(--line);
   margin-left: clamp(.35rem, 1.2vw, 1rem);
   padding: clamp(.15rem, .5vh, .5rem) 0 clamp(.3rem, 1vh, .9rem);
@@ -231,6 +231,7 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
   /* as portas filhas sobem quando o submenu abre */
   .sub:not([hidden]) .leaf { animation: rise .6s var(--ease) backwards; }
   .sub:not([hidden]) .leaf:nth-child(2) { animation-delay: .06s; }
+  .sub:not([hidden]) .leaf:nth-child(3) { animation-delay: .12s; }
 
   /* o rodapé é o último elemento: translação aqui criaria barra de rolagem, então só fade */
   .reveal--fade { animation: fade 1s var(--ease) backwards; animation-delay: var(--d, 0s); }
@@ -268,12 +269,7 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
         <span class="arr" aria-hidden="true">&#8599;</span>
       </a>
 
-      <a class="door reveal" style="--d:.52s" href="/ouvidinho/">
-        <span class="label">Ouvidinho</span>
-        <span class="arr" aria-hidden="true">&#8599;</span>
-      </a>
-
-      <button class="door door--toggle reveal" style="--d:.6s" type="button"
+      <button class="door door--toggle reveal" style="--d:.52s" type="button"
               aria-expanded="false" aria-controls="loja" data-toggle>
         <span class="label">Loja e Conteúdos</span>
         <span class="arr arr--down" aria-hidden="true">&#8595;</span>
@@ -288,11 +284,15 @@ footer a:hover, footer a:focus-visible { color: var(--fg); }
           <span class="label">Conteúdos no Gumroad</span>
           <span class="arr" aria-hidden="true">&#8599;</span>
         </a>
+        <a class="leaf" href="/ouvidinho/">
+          <span class="label">Ouvidinho</span>
+          <span class="arr" aria-hidden="true">&#8599;</span>
+        </a>
       </div>
     </nav>
   </main>
 
-  <footer class="reveal--fade" style="--d:.68s">
+  <footer class="reveal--fade" style="--d:.6s">
     <a href="https://github.com/henribon" rel="me">github &#8599;</a>
   </footer>
 
